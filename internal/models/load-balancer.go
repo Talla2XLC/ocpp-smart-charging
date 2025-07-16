@@ -9,6 +9,6 @@ type LoadBalancer struct {
 	Name     string             `bson:"name"`          // Power load balancer name
 	Tenant   string             `bson:"tenant"`        // Owner tenant
 	LimitKW  float64            `bson:"limit_kw"`      // Max available power in kW
-	LimitAmp float64            `bson:"limit_kw"`      // Max available current in Amp
+	LimitAmp float64            `bson:"limit_amp"`     // Max available current in Amp
 	Active   bool               `bson:"active"`        // Is balancer active
 }

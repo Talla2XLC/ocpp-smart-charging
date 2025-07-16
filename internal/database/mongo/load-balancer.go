@@ -10,7 +10,50 @@ import (
 	"ocpp-smart-charging/internal/models" // Импортируя модели
 )
 
-// GetLoadBalancer get LoadBalancer from MongoDB by ID
+// CreateLoadBalancer create new LoadBalancer
+func CreateLoadBalancer(db *mongo.Database) (*mongo.InsertOneResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), config.AppConfig.RequestTimeout) // Установите таймаут в 5 секунд
+	defer cancel()
+
+	result, err := db.Collection("load_balancers").InsertOne(ctx, bson.D{
+		{"_id", primitive.NewObjectID()},
+		{"active", true},
+	})
+	return result, err
+}
+
+// GetLoadBalancers get all LoadBalancers
+func GetLoadBalancers(db *mongo.Database) ([]models.LoadBalancer, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), config.AppConfig.RequestTimeout) // Установите таймаут в 5 секунд
+	defer cancel()
+
+	cursor, err := db.Collection("load_balancers").Find(ctx, bson.M{})
+	defer func() {
+		if closeErr := cursor.Close(ctx); closeErr != nil {
+			log.Println("Failed to close cursor:", closeErr)
+		}
+	}()
+
+	var loadBalancers []models.LoadBalancer
+
+	// Decode cursor
+	for cursor.Next(ctx) {
+		var loadBalancer models.LoadBalancer
+		if err := cursor.Decode(&loadBalancer); err != nil {
+			return nil, err
+		}
+		loadBalancers = append(loadBalancers, loadBalancer)
+	}
+
+	// Check for errors during cursor iteration
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return loadBalancers, err
+}
+
+// GetLoadBalancer get LoadBalancer by ID
 func GetLoadBalancer(db *mongo.Database, loadBalancerID primitive.ObjectID) (models.LoadBalancer, error) {
 	var loadBalancer models.LoadBalancer
 
@@ -21,7 +64,7 @@ func GetLoadBalancer(db *mongo.Database, loadBalancerID primitive.ObjectID) (mod
 	return loadBalancer, err
 }
 
-// GetLoadBalancerWithStations - Get LoadBalancer with ChargingStations from MongoDB by ID
+// GetLoadBalancerWithStations - Get LoadBalancer with ChargingStations by ID
 func GetLoadBalancerWithStations(db *mongo.Database, loadBalancerID primitive.ObjectID) (models.LoadBalancer, []models.ChargingStation, error) {
 	var loadBalancer models.LoadBalancer
 	var chargingStations []models.ChargingStation
