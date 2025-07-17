@@ -29,14 +29,16 @@ func Run() *App {
 }
 
 func RunHttpServer() *http.Server {
+	mux := http.NewServeMux()
+	routes.RegisterRoutes(mux)
+
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.AppConfig.Port),
+		Handler:      mux,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 	}
 	fmt.Printf("Server launched at port: %d\n", config.AppConfig.Port)
-
-	routes.RegisterRoutes()
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {

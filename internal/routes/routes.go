@@ -6,7 +6,7 @@ import (
 )
 
 // RegisterRoutes - Routes registration
-func RegisterRoutes() {
-	http.HandleFunc("/health", handlers.HealthHandler)
-	http.HandleFunc("/calculate-power-map", handlers.CalculatePowerMapHandler)
+func RegisterRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("/health", handlers.HealthHandler)
+	mux.HandleFunc("/calculate-power-map", handlers.CalculatePowerMapHandler)
 }
